@@ -44,6 +44,8 @@ class RobotNodeService(BaseModuleService):
             last = it.get("最近心跳", "")
             try:
                 last_dt = datetime.fromisoformat(last)
+                if last_dt.tzinfo is None:
+                    last_dt = last_dt.replace(tzinfo=timezone(timedelta(hours=8)))
                 if (now - last_dt).total_seconds() > heartbeat_timeout_s:
                     self.run_action(it["id"], "摘除节点")
                     continue

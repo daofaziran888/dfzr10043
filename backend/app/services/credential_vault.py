@@ -38,6 +38,8 @@ class CredentialVaultService(BaseModuleService):
         now = datetime.now(timezone(timedelta(hours=8)))
         try:
             last_dt = datetime.fromisoformat(last_rotation)
+            if last_dt.tzinfo is None:
+                last_dt = last_dt.replace(tzinfo=timezone(timedelta(hours=8)))
         except (ValueError, TypeError):
             last_dt = now - timedelta(days=cycle_days + 1)
         days_elapsed = (now - last_dt).days

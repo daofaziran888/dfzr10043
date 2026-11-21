@@ -311,8 +311,10 @@ class TestServiceBusinessLogic:
 
     def test_exception_rule_match(self):
         rule_svc = service_for("exception_rule")
-        result = rule_svc.match_exception("test_match_定位")
-        assert result is not None or isinstance(result, dict)
+        # 种子数据匹配特征为「定位漂移」，需作为签名的子串
+        result = rule_svc.match_exception("trigger_定位漂移_event")
+        assert result is not None
+        assert result.get("matched") is True
 
     def test_retry_should_abandon(self):
         retry_svc = service_for("retry_policy")
