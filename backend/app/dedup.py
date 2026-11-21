@@ -36,12 +36,15 @@ def dedup_by_window(rows: list[dict[str, Any]], key_fields: list[str],
     """按采集窗口去重：相同时窗口内相同键字段的重复行只保留第一条。"""
     seen: set[str] = set()
     result = []
-    now = datetime.now(timezone(timedelta(hours=8)))
+    tz = timezone(timedelta(hours=8))
+    now = datetime.now(tz)
     for row in rows:
         key = "|".join(str(row.get(f, "")) for f in key_fields)
         gen_time = row.get("生成时间", "") or row.get("入队时间", "") or ""
         try:
             row_dt = datetime.fromisoformat(gen_time)
+            if row_dt.tzinfo is None:
+                row_dt = row_dt.replace(tzinfo=tz)
         except (ValueError, TypeError):
             row_dt = now
         in_window = abs((now - row_dt).days) <= window_days
@@ -56,7 +59,9 @@ def conflict_resolve_rollback(current: dict[str, Any], previous: dict[str, Any])
     cur_version = str(current.get("版本号", "0"))
     prev_version = str(previous.get("版本号", "0"))
     cur_rollback = current.get("回滚版本", "")
-    if cur_rollback:
+    prev_rollback = previous.get("回滚版本", "")
+    # 回滚场景：当前版本有回滚目标 或 上一版本标记了回滚 → 旧版本胜出
+    if cur_rollback or prev_rollback:
         return previous
     try:
         if float(prev_version.replace("v", "")) > float(cur_version.replace("v", "")):

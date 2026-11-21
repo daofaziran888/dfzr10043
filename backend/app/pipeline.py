@@ -173,14 +173,16 @@ def collect_files_and_land_data(run_id: int, file_payloads: list[dict[str, Any]]
 
     # 创建采集批次
     batch_svc = service_for("capture_batch")
-    batch_payload = "\n".join(str(f.get("id")) for f in collected)
+    batch_payload = "\n".join(
+        fp.get("文件名称", "") for fp in file_payloads
+    )
     batch_checksum = _checksum(batch_payload)
 
     # 去重：按采集窗口+上游来源判重，重复批次不落库
     existing = batch_svc.list_entries(size=10000)[0]
     dup_check = f"{run_entry.get('执行编号')}:{run_id}"
     duplicate = any(
-        e.get("上游来源") == dup_check and e.get("完整性校验") == batch_checksum
+        e.get("上游来源") == dup_check
         for e in existing
     )
     if duplicate:

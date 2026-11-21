@@ -45,5 +45,11 @@ class Store:
         ]
         return {"cards": cards, "modules": modules}
 
+    def reset(self) -> None:
+        """重置 store 为种子数据初始状态，用于测试隔离。"""
+        self._tables = {
+            name: [dict(row) for row in rows] for name, rows in SEED_ROWS.items()
+        }
+
 
 store = Store()
