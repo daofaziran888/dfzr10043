@@ -89,7 +89,7 @@ class TestPipelineLink2_CollectLandHandoff:
         mapping_svc = service_for("field_mapping")
         mapping_ids = [m["id"] for m in mapping_svc.list_entries(size=1000)[0][:2]]
         result = collect_files_and_land_data(run_id, [
-            {"文件名称": "output_page1.csv", "文件类型": "text/csv", "字节大小": "2048"},
+            {"文件名称": "output_page1.csv", "文件类型": "text/csv", "字节大小": "4096"},
         ], mapping_ids)
         assert result["status"] == "landed"
         assert result["handoff_id"] > 0
